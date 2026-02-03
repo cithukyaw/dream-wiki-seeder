@@ -54,14 +54,18 @@ async function processImage(imagePath) {
 
     const outputText = response.data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
     const cleanedOutput = trimOutput(outputText);
+    if (cleanedOutput === '') {
+      console.error(` ✗ Error: Empty response from API for ${relativePath}. Skipping output file creation.`);
+      return;
+    }
 
     fs.writeFileSync(outputPath, cleanedOutput);
-    console.log(`Output successfully saved to ${outputPath}`);
+    console.log(` ✓ Output successfully saved to ${outputPath}`);
 
     // Move the image file to data/done after successful save
     moveImageToDone(imagePath);
   } catch (error) {
-    console.error('Axios Error:', error.response ? error.response.data : error.message);
+    console.error(' ✗ Axios Error:', error.response ? error.response.data : error.message);
     console.log(error);
   }
 }
@@ -73,7 +77,7 @@ async function main() {
   const imageFiles = findImageFiles('data', numImages);
 
   if (imageFiles.length === 0) {
-    console.log('No image files found in data directory');
+    console.log(' ✗ No image files found in data directory');
     return;
   }
 
@@ -83,11 +87,11 @@ async function main() {
     try {
       await processImage(imagePath);
     } catch (error) {
-      console.error(`Error processing ${imagePath}:`, error.message);
+      console.error(` ✗ Error processing ${imagePath}:`, error.message);
     }
   }
 
-  console.log('Processing complete!');
+  console.log('Processing finished!');
 }
 
 main();

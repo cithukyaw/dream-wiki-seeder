@@ -1,12 +1,10 @@
 import { GoogleGenAI } from "@google/genai";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { findImageFiles, moveImageToDone, getPrompt, trimOutput } from './utils.js';
+import { findImageFiles, moveImageToDone, getPrompt, trimOutput, writeLog } from './utils.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 /**
  * Process a single image file
@@ -32,7 +30,8 @@ async function processImage(imagePath) {
 
   const base64ImageData = fs.readFileSync(imagePath, { encoding: "base64" });
 
-  console.log("Sending request to Gemini API...");
+  console.log(`Sending request to Gemini API ...`);
+  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
   const response = await ai.models.generateContent({
     model: process.env.GEMINI_MODEL,
@@ -49,10 +48,17 @@ async function processImage(imagePath) {
 
   const outputText = response.text ?? '';
   const cleanedOutput = trimOutput(outputText);
+
+  if (cleanedOutput === '') {
+    console.error(` ✗ Error: Empty response from API for ${relativePath}. Skipping output file creation.`);
+    return;
+  }
+
   fs.writeFileSync(outputPath, cleanedOutput);
-
-  console.log(`Output successfully saved to ${outputPath}`);
-
+  const logMsg = `Output successfully saved to ${outputPath}`;
+  console.log(`' ✓ ${logMsg}`);
+  // Write log to file
+  writeLog(`[gemini]: ${logMsg}`);
   // Move the image file to data/done after successful save
   moveImageToDone(imagePath);
 }
@@ -64,7 +70,7 @@ async function main() {
   const imageFiles = findImageFiles('data', numImages);
 
   if (imageFiles.length === 0) {
-    console.log('No image files found in data directory');
+    console.log(' ✗ No image files found in data directory');
     return;
   }
 
@@ -74,11 +80,11 @@ async function main() {
     try {
       await processImage(imagePath);
     } catch (error) {
-      console.error(`Error processing ${imagePath}:`, error.message);
+      console.error(` ✗ Error processing ${imagePath}:`, error.message);
     }
   }
 
-  console.log('Processing complete!');
+  console.log('Processing finished!');
 }
 
 main();

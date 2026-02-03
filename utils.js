@@ -22,7 +22,7 @@ export const getGeminiVisionPayload = base64ImageFile => {
 }
 
 export const getPrompt = () => {
-  return "Extract the Burmese texts from the image as json format where the key means category and it has a group of definitions. The category word should prepend to each definition without using any character except a space. No need the static key 'category' and 'definitionso'. Do not extract page number, header and footer."
+  return "Extract the Burmese texts from the image as JSON format where the key means category and it has a group of definitions. The category word should prepend to each definition without using any character except a space. No need the static key 'category' and 'definitions'. Do not extract page number, header and footer."
 }
 
 /**
@@ -71,4 +71,29 @@ export function moveImageToDone(imagePath, dataRoot = 'data') {
 
   fs.renameSync(imagePath, donePath);
   console.log(`Moved image to: ${path.join(`${dataRoot}/done`, relativePath)}`);
+
+  // Delete the source directory if it's empty
+  const sourceDir = path.dirname(imagePath);
+  try {
+    const files = fs.readdirSync(sourceDir);
+    if (files.length === 0) {
+      fs.rmdirSync(sourceDir);
+      console.log(`Deleted empty directory: ${sourceDir}`);
+    }
+  } catch (error) {
+    // Ignore errors if directory doesn't exist or can't be read
+    // (file might have been the last one, or directory already deleted)
+  }
+}
+
+export function writeLog(msg)
+{
+    // Format log file name as log-{yyyymmdd}.log
+    const now = new Date();
+    const yyyymmdd = now.getFullYear().toString() +
+      String(now.getMonth() + 1).padStart(2, '0') +
+      String(now.getDate()).padStart(2, '0');
+    const logFileName = `log-${yyyymmdd}.log`;
+
+    fs.writeFileSync(path.join('logs', logFileName), `${msg}\n`, { flag: 'a' });
 }
