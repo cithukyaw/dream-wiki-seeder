@@ -1,6 +1,6 @@
 # Dream Wiki Seeder
 
-A lightweight Node.js utility for seeding a local wiki-style dataset from image metadata and external APIs. This repository contains small scripts and utilities used to fetch, process, and save metadata and image-related JSON output into an organized `output/` folder.
+A lightweight Node.js utility for seeding a local wiki-style dataset from image metadata to https://github.com/cithukyaw/dream-wiki ([dream-wiki.lovable.app](https://dream-wiki.lovable.app/)). This repository contains small scripts and utilities used to fetch, process, and save metadata and image-related JSON output into an organized `output/` folder.
 
 **Key Files:**
 - `package.json`: project metadata and dependencies.
